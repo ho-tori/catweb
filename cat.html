@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>校园猫咪关爱平台</title>
+
+
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: '微软雅黑', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 导航样式 */
+        nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #ffd700;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* 猫咪档案卡片 */
+        .cat-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            width: 300px;
+            display: inline-block;
+        }
+
+        /* 地图容器 */
+    .map-container {
+        width: 21%;
+        height: 400px;
+        position: relative;
+        overflow: hidden;
+        background: #f0f0f0;
+        border-radius: 10px;
+    }
+    
+    /* 可缩放地图图片 */
+    .scalable-map {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s;
+        cursor: grab;
+    }
+    
+    /* 标注点样式 */
+    .marker {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #ff4757;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        cursor: pointer;
+    }
+    
+    /* 标注提示 */
+    .marker::after {
+        content: attr(data-cat);
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .marker:hover::after {
+        opacity: 1;
+    }
+
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .cat-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🐾 金陵十二喵 🐾</h1>
+    </header>
+
+    <nav>
+        <a href="#profiles">猫咪档案</a>
+        <a href="#diary">猫咪日记</a>
+        <a href="#map">猫咪地图</a>
+        <a href="#words">猫咪的话</a>
+        <a href="#hot">周热搜</a>
+    </nav>
+
+    <!-- 猫咪档案 -->
+    <section id="profiles" class="section">
+        <h2>🐱 猫咪档案</h2>
+        <div id="cat-profiles"></div>
+    </section>
+
+    <!-- 猫咪日记 -->
+    <section id="diary" class="section">
+        <h2>📔 猫咪日记</h2>
+        <form id="diary-form">
+            <input type="text" placeholder="猫咪名字" required>
+            <textarea placeholder="分享你的故事..." rows="3"></textarea>
+            <input type="file" accept="image/*">
+            <button type="submit">发布</button>
+        </form>
+        <div id="diary-list"></div>
+    </section>
+
+    <!-- 猫咪地图 -->
+    <section id="map" class="section">
+    <h2>🗺️ 猫咪地图</h2>
+    <div class="map-container">
+        <!-- 请替换为你的校园地图图片 -->
+        <img src="gulou_map.jpg" class="scalable-map" alt="校园地图">
+        
+        <!-- 标注点示例（坐标需要根据实际图片调整） -->
+        <div class="marker" style="left: 30%; top: 45%" data-cat="大橘"></div>
+        <div class="marker" style="left: 55%; top: 60%" data-cat="小白"></div>
+        <div class="marker" style="left: 40%; top: 35%" data-cat="煤球"></div>
+    </div>
+    <p style="color: #000000; font-size: 14px; margin-top: 10px;">
+        💡 提示：红色标记为猫咪常出没区域，鼠标悬停查看猫咪名字
+    </p>
+</section>
+
+
+    <!-- 猫咪的话 -->
+    <section id="words" class="section">
+    <h2>💬 猫咪的话</h2>
+    <div id="cat-words-container" style="display: flex; align-items: center;">
+        <div id="cat-message" style="flex:1"></div>
+        <img id="cat-words-img" src="lineCat.jpg" alt="猫咪" style="width:200px; height:auto; margin-left:10px; border-radius:100px;">
+    </div>
+    <button onclick="generateMessage()">我还想看更多小猫咪的话</button>
+</section>
+
+    <!-- 周热搜 -->
+    <section id="hot" class="section">
+        <h2>🔥 周热搜</h2>
+        <div id="hot-list"></div>
+    </section>
+
+    <script>
+        // 猫咪数据
+        const cats = [{
+            name: "大橘",
+            location: "食堂门口",
+            personality: "亲人贪吃",
+            health: {
+                vaccine: true,
+                body: "肥胖"
+            },
+            adopted: false
+        }];
+
+        // 治愈语录
+        const messages = [
+            "两脚兽，你可以在本喵宽广的胸膛里哭泣",
+            "今天也是认真监督你学习的一天喵～",
+            "你的小鱼干分我一半，我的快乐分你一半",
+            "不开心的时候记得摸摸我的肚皮呀",
+            "我会一直陪着你，直到你找到属于自己的幸福",
+            "无论发生什么，我都会在你身边",
+            "你是我心中最闪亮的星星",
+            "生活就像一盒猫罐头，永远不知道下一罐是什么味道",
+            "每一只猫咪都是你生命中的小天使",
+            "我会用我的毛发温暖你的心",
+            "无论你走到哪里，我的心都会跟随你",
+            "你是我生命中最重要的存在",
+            "我会用我的爪子守护你",
+            "生活就像一场猫咪的冒险，充满惊喜和乐趣",
+        ];
+        const catImages = [
+            "lineCat.jpg",
+            "eatCat.jpg",
+            "sadCat.jpg",
+            "coolCat.jpg"
+        
+        ];
+
+        // 初始化猫咪档案
+        function initProfiles() {
+            const container = document.getElementById('cat-profiles');
+            cats.forEach(cat => {
+                container.innerHTML += `
+                    <div class="cat-card">
+                        <h3>${cat.name}</h3>
+                        <p>📍 ${cat.location}</p>
+                        <p>性格：${cat.personality}</p>
+                        <p>疫苗：${cat.health.vaccine ? '✅' : '❌'}</p>
+                        <p>领养状态：${cat.adopted ? '已领养' : '等待家'}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // 生成随机语录
+        function generateMessage() {
+            const msg = messages[Math.floor(Math.random()*messages.length)];
+            document.getElementById('cat-message').innerHTML = 
+                `<blockquote>"${msg}"</blockquote>`;
+                const img = catImages[Math.floor(Math.random()*catImages.length)];
+            document.getElementById('cat-words-img').src = img;
+        }
+
+        // 日记表单提交
+        document.getElementById('diary-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // 这里需要添加实际提交逻辑
+            alert('日记已提交（需后端支持）');
+        });
+
+        // 初始化
+        window.onload = function() {
+            initProfiles();
+            generateMessage();
+        }
+    </script>
+</body>
+</html>
