@@ -202,5 +202,3 @@ function generateMessage() {
 - [B站前端入门教程](https://www.bilibili.com/video/BV1Kg411T7t9)
 - [SpringBoot实践案例](https://github.com/527515025/springBoot)
 ```
-
-注：本文档严格遵循技术中立原则，所有猫咪图片素材均采用CC0协议开源图片。系统架构已去除WordPress相关模块，前端采用纯Vue.js实现，后端保持SpringBoot技术栈。
